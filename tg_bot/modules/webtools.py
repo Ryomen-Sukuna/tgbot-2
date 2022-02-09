@@ -11,7 +11,7 @@ from telegram import Message, Chat, Update, Bot, MessageEntity
 from telegram import ParseMode
 from telegram.ext import CommandHandler, run_async, Filters
 from telegram.utils.helpers import escape_markdown, mention_html
-from tg_bot.modules.helper_funcs.extraction import extract_text
+from tg_bot.utils.extraction import extract_text
 
 from tg_bot import (
     dispatcher,
@@ -21,7 +21,7 @@ from tg_bot import (
     SUPPORT_USERS,
     WHITELIST_USERS,
 )
-from tg_bot.modules.helper_funcs.filters import CustomFilters
+from tg_bot.utils.filters import CustomFilters
 
 
 # Kanged from PaperPlane Extended userbot

@@ -13,9 +13,9 @@ from telegram.utils.helpers import escape_markdown
 import tg_bot.modules.sql.notes_sql as sql
 from tg_bot import dispatcher, CallbackContext, MESSAGE_DUMP, LOGGER
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.chat_status import user_admin
-from tg_bot.modules.helper_funcs.misc import build_keyboard, revert_buttons
-from tg_bot.modules.helper_funcs.msg_types import get_note_type
+from tg_bot.utils.chat_status import user_admin
+from tg_bot.utils.misc import build_keyboard, revert_buttons
+from tg_bot.utils.msg_types import get_note_type
 
 FILE_MATCHER = re.compile(r"^###file_id(!photo)?###:(.*?)(?:\s|$)")
 

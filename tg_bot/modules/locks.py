@@ -21,7 +21,7 @@ from telegram.utils.helpers import mention_html
 import tg_bot.modules.sql.locks_sql as sql
 from tg_bot import dispatcher, CallbackContext, SUDO_USERS, LOGGER
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.chat_status import (
+from tg_bot.utils.chat_status import (
     can_delete,
     is_user_admin,
     user_not_admin,
@@ -30,10 +30,10 @@ from tg_bot.modules.helper_funcs.chat_status import (
     is_bot_admin,
     is_user_in_chat,
 )
-from tg_bot.modules.helper_funcs.filters import CustomFilters
+from tg_bot.utils.filters import CustomFilters
 from tg_bot.modules.log_channel import loggable
 from tg_bot.modules.sql import users_sql
-from tg_bot.modules.helper_funcs.perms import check_perms
+from tg_bot.utils.perms import check_perms
 
 LOCK_TYPES = {
     "sticker": Filters.sticker,

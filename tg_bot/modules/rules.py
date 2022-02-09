@@ -9,8 +9,8 @@ from telegram.utils.helpers import escape_markdown
 import tg_bot.modules.sql.rules_sql as sql
 from tg_bot import dispatcher, CallbackContext
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.chat_status import user_admin
-from tg_bot.modules.helper_funcs.string_handling import markdown_parser
+from tg_bot.utils.chat_status import user_admin
+from tg_bot.utils.string_handling import markdown_parser
 
 
 def get_rules(update: Update, context: CallbackContext):

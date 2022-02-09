@@ -7,7 +7,7 @@ from telegram.ext import CommandHandler, RegexHandler, run_async, Filters
 from telegram.utils.helpers import mention_html
 
 from tg_bot import dispatcher, CallbackContext, LOGGER
-from tg_bot.modules.helper_funcs.chat_status import user_not_admin, user_admin
+from tg_bot.utils.chat_status import user_not_admin, user_admin
 from tg_bot.modules.log_channel import loggable
 from tg_bot.modules.sql import reporting_sql as sql
 

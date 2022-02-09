@@ -6,7 +6,7 @@ from telegram.error import BadRequest
 from telegram.ext import MessageHandler, Filters, CommandHandler
 from telegram.ext.dispatcher import run_async
 from typing import List
-from tg_bot.modules.helper_funcs.filters import CustomFilters
+from tg_bot.utils.filters import CustomFilters
 from tg_bot.modules.sql.users_sql import get_all_chats
 
 import telegram

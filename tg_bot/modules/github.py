@@ -13,7 +13,7 @@ from telegram import (
     MAX_MESSAGE_LENGTH,
 )
 
-import tg_bot.modules.helper_funcs.git_api as api
+import tg_bot.utils.git_api as api
 import tg_bot.modules.sql.github_sql as sql
 
 from tg_bot import (
@@ -24,8 +24,8 @@ from tg_bot import (
     SUDO_USERS,
     SUPPORT_USERS,
 )
-from tg_bot.modules.helper_funcs.filters import CustomFilters
-from tg_bot.modules.helper_funcs.chat_status import user_admin
+from tg_bot.utils.filters import CustomFilters
+from tg_bot.utils.chat_status import user_admin
 from tg_bot.modules.disable import DisableAbleCommandHandler
 
 

@@ -4,8 +4,8 @@ from telegram import Update, Bot, Chat, Message, User
 from telegram.error import BadRequest
 from telegram.ext import CommandHandler, Filters
 from telegram.ext.dispatcher import run_async
-from tg_bot.modules.helper_funcs.chat_status import bot_admin
-from tg_bot.modules.helper_funcs.filters import CustomFilters
+from tg_bot.utils.chat_status import bot_admin
+from tg_bot.utils.filters import CustomFilters
 
 from tg_bot import dispatcher, CallbackContext
 import random, re

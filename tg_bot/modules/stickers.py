@@ -6,7 +6,7 @@ from telegram.utils.helpers import escape_markdown
 
 from tg_bot import dispatcher, CallbackContext
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.filters import CustomFilters
+from tg_bot.utils.filters import CustomFilters
 
 
 def stickerid(update: Update, context: CallbackContext):

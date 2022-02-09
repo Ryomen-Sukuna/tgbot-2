@@ -6,14 +6,14 @@ from telegram.ext import CommandHandler, MessageHandler, Filters
 from telegram.utils.helpers import escape_markdown
 
 from tg_bot import dispatcher, CallbackContext
-from tg_bot.modules.helper_funcs.handlers import CMD_STARTERS
-from tg_bot.modules.helper_funcs.misc import is_module_loaded
+from tg_bot.utils.handlers import CMD_STARTERS
+from tg_bot.utils.misc import is_module_loaded
 
 FILENAME = __name__.rsplit(".", 1)[-1]
 
 # If module is due to be loaded, then setup all the magical handlers
 if is_module_loaded(FILENAME):
-    from tg_bot.modules.helper_funcs.chat_status import user_admin, is_user_admin
+    from tg_bot.utils.chat_status import user_admin, is_user_admin
     from telegram.ext.dispatcher import run_async
 
     from tg_bot.modules.sql import disable_sql as sql

@@ -16,11 +16,11 @@ from telegram.utils.helpers import escape_markdown
 
 from tg_bot import dispatcher, CallbackContext, LOGGER
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.chat_status import user_admin
-from tg_bot.modules.helper_funcs.extraction import extract_text
-from tg_bot.modules.helper_funcs.filters import CustomFilters
-from tg_bot.modules.helper_funcs.misc import build_keyboard
-from tg_bot.modules.helper_funcs.string_handling import (
+from tg_bot.utils.chat_status import user_admin
+from tg_bot.utils.extraction import extract_text
+from tg_bot.utils.filters import CustomFilters
+from tg_bot.utils.misc import build_keyboard
+from tg_bot.utils.string_handling import (
     split_quotes,
     button_markdown_parser,
 )

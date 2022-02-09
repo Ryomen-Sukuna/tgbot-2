@@ -21,9 +21,9 @@ from tg_bot import (
 )
 from tg_bot.__main__ import STATS, USER_INFO, GDPR
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.chat_status import user_admin, is_user_admin
-from tg_bot.modules.helper_funcs.extraction import extract_user
-from tg_bot.modules.helper_funcs.filters import CustomFilters
+from tg_bot.utils.chat_status import user_admin, is_user_admin
+from tg_bot.utils.extraction import extract_user
+from tg_bot.utils.filters import CustomFilters
 
 from geopy.geocoders import Nominatim
 from telegram import Location

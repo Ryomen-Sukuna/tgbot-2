@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Optional
 
-from tg_bot.modules.helper_funcs.misc import is_module_loaded
+from tg_bot.utils.misc import is_module_loaded
 
 FILENAME = __name__.rsplit(".", 1)[-1]
 
@@ -12,7 +12,7 @@ if is_module_loaded(FILENAME):
     from telegram.utils.helpers import escape_markdown
 
     from tg_bot import dispatcher, CallbackContext, LOGGER
-    from tg_bot.modules.helper_funcs.chat_status import user_admin
+    from tg_bot.utils.chat_status import user_admin
     from tg_bot.modules.sql import log_channel_sql as sql
 
     def loggable(func):

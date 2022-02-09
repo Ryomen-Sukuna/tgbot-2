@@ -35,8 +35,8 @@ from tg_bot import (
 # needed to dynamically load modules
 # NOTE: Module order is not guaranteed, specify that in the config file!
 from tg_bot.modules import ALL_MODULES
-from tg_bot.modules.helper_funcs.chat_status import is_user_admin
-from tg_bot.modules.helper_funcs.misc import paginate_modules
+from tg_bot.utils.chat_status import is_user_admin
+from tg_bot.utils.misc import paginate_modules
 
 PM_START_TEXT = """
 Hello {}, my name is *{}*! I'm a group manager bot.

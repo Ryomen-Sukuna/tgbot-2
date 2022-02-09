@@ -16,10 +16,10 @@ from tg_bot import (
     SUPPORT_USERS,
     STRICT_GBAN,
 )
-from tg_bot.modules.helper_funcs.chat_status import user_admin, is_user_admin
-from tg_bot.modules.helper_funcs.extraction import extract_user, extract_user_and_text
-from tg_bot.modules.helper_funcs.filters import CustomFilters
-from tg_bot.modules.helper_funcs.misc import send_to_list
+from tg_bot.utils.chat_status import user_admin, is_user_admin
+from tg_bot.utils.extraction import extract_user, extract_user_and_text
+from tg_bot.utils.filters import CustomFilters
+from tg_bot.utils.misc import send_to_list
 from tg_bot.modules.sql.users_sql import get_all_chats
 
 GBAN_ENFORCE_GROUP = 6

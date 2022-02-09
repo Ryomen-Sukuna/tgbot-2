@@ -9,7 +9,7 @@ from telegram.utils.helpers import escape_markdown
 import tg_bot.modules.sql.userinfo_sql as sql
 from tg_bot import dispatcher, CallbackContext, SUDO_USERS
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.extraction import extract_user
+from tg_bot.utils.extraction import extract_user
 
 
 def about_me(update: Update, context: CallbackContext):

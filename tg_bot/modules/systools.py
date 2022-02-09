@@ -1,15 +1,15 @@
 import subprocess
 import os
 
-import tg_bot.modules.helper_funcs.cas_api as cas
-import tg_bot.modules.helper_funcs.git_api as git
+import tg_bot.utils.cas_api as cas
+import tg_bot.utils.git_api as git
 
 from platform import python_version
 from telegram import Update, Bot, Message, Chat, ParseMode
 from telegram.ext import CommandHandler, run_async, Filters
 
 from tg_bot import dispatcher, CallbackContext, OWNER_ID, SUDO_USERS, SUPPORT_USERS
-from tg_bot.modules.helper_funcs.filters import CustomFilters
+from tg_bot.utils.filters import CustomFilters
 from tg_bot.modules.disable import DisableAbleCommandHandler
 
 

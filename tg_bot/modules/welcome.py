@@ -3,7 +3,7 @@ import re
 import asyncio
 from typing import Optional, List
 
-import tg_bot.modules.helper_funcs.cas_api as cas
+import tg_bot.utils.cas_api as cas
 
 from telegram import (
     Message,
@@ -41,21 +41,21 @@ from tg_bot import (
     SUDO_USERS,
     SUPPORT_USERS,
 )
-from tg_bot.modules.helper_funcs.chat_status import (
+from tg_bot.utils.chat_status import (
     user_admin,
     can_delete,
     is_user_ban_protected,
 )
-from tg_bot.modules.helper_funcs.misc import (
+from tg_bot.utils.misc import (
     build_keyboard,
     revert_buttons,
     send_to_list,
 )
-from tg_bot.modules.helper_funcs.msg_types import get_welcome_type
-from tg_bot.modules.helper_funcs.extraction import extract_user
+from tg_bot.utils.msg_types import get_welcome_type
+from tg_bot.utils.extraction import extract_user
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.filters import CustomFilters
-from tg_bot.modules.helper_funcs.string_handling import (
+from tg_bot.utils.filters import CustomFilters
+from tg_bot.utils.string_handling import (
     markdown_parser,
     escape_invalid_curly_brackets,
 )

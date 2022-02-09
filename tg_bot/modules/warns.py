@@ -24,7 +24,7 @@ from telegram.utils.helpers import mention_html
 
 from tg_bot import dispatcher, CallbackContext, BAN_STICKER, SUDO_USERS
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.chat_status import (
+from tg_bot.utils.chat_status import (
     is_user_admin,
     bot_admin,
     user_admin_no_reply,
@@ -32,17 +32,17 @@ from tg_bot.modules.helper_funcs.chat_status import (
     can_restrict,
     user_not_admin,
 )
-from tg_bot.modules.helper_funcs.extraction import (
+from tg_bot.utils.extraction import (
     extract_text,
     extract_user_and_text,
     extract_user,
 )
-from tg_bot.modules.helper_funcs.filters import CustomFilters
-from tg_bot.modules.helper_funcs.misc import split_message
-from tg_bot.modules.helper_funcs.string_handling import split_quotes
+from tg_bot.utils.filters import CustomFilters
+from tg_bot.utils.misc import split_message
+from tg_bot.utils.string_handling import split_quotes
 from tg_bot.modules.log_channel import loggable
 from tg_bot.modules.sql import warns_sql as sql
-from tg_bot.modules.helper_funcs.perms import check_perms
+from tg_bot.utils.perms import check_perms
 
 WARN_HANDLER_GROUP = 9
 CURRENT_WARNING_FILTER_STRING = "<b>Current warning filters in this chat:</b>\n"

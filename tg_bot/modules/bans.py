@@ -15,7 +15,7 @@ from telegram import (
 
 from tg_bot import dispatcher, CallbackContext, BAN_STICKER, LOGGER
 from tg_bot.modules.disable import DisableAbleCommandHandler
-from tg_bot.modules.helper_funcs.chat_status import (
+from tg_bot.utils.chat_status import (
     bot_admin,
     user_admin,
     is_user_ban_protected,
@@ -24,14 +24,14 @@ from tg_bot.modules.helper_funcs.chat_status import (
     is_user_in_chat,
     is_bot_admin,
 )
-from tg_bot.modules.helper_funcs.extraction import (
+from tg_bot.utils.extraction import (
     extract_user_and_text,
     extract_multiple_users,
 )
-from tg_bot.modules.helper_funcs.string_handling import extract_time
+from tg_bot.utils.string_handling import extract_time
 from tg_bot.modules.log_channel import loggable
-from tg_bot.modules.helper_funcs.filters import CustomFilters
-from tg_bot.modules.helper_funcs.perms import check_perms
+from tg_bot.utils.filters import CustomFilters
+from tg_bot.utils.perms import check_perms
 
 
 @bot_admin
