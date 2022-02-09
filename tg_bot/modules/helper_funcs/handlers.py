@@ -2,7 +2,7 @@ import telegram.ext as tg
 from telegram import Update
 from tg_bot import ALLOW_EXCL
 
-CMD_STARTERS = ('/', '!')
+CMD_STARTERS = ("/", "!")
 
 
 class CustomCommandHandler(tg.CommandHandler):
