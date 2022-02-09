@@ -1,3 +1,8 @@
+# Warning
+This branch is for rebasing the whole codebase. **It's not for production usage.**
+
+**I CANNOT GUARANTEE UPGRADING DATABASE WHEN THE COMMIT BREAKS IT ONCE!**
+
 # tgbot
 A modular telegram Python bot running on python3 with an sqlalchemy database.
 
