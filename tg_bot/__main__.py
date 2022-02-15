@@ -24,7 +24,6 @@ from tg_bot import (
     TOKEN,
     WEBHOOK,
     OWNER_ID,
-    DONATION_LINK,
     CERT_PATH,
     PORT,
     URL,
@@ -40,6 +39,7 @@ from tg_bot.modules import ALL_MODULES
 from tg_bot.utils.chat_status import is_user_admin
 from tg_bot.utils.misc import paginate_modules
 
+
 START_STRING = """
 Hello {username}! My name is <b>{botname}</b>, \
 a group management bot to help you manage groups!
@@ -48,10 +48,6 @@ Hit /help if you want to know more about me!
 """.format(
     username="{username}", botname="{botname}", info=INFO_START if INFO_START else ""
 )
-
-SOURCE_STRING = """
-I'm built in python3, using the python-telegram-bot library, and am fully opensource - you can find what makes me tick [here](https://github.com/corsicanu/tgbot)
-"""
 
 HELP_STRING = """
 <b>Help</b>
@@ -73,8 +69,6 @@ All commands can be used with the following: <code>/</code> {cmd}
     info=INFO_HELP if INFO_HELP else "",
 )
 
-DONATE_STRING = """
-You can send a donation to my current maintainers, @corsicanu and @nunopenim, via PayPal at paypal.me/corsicanu and/or paypal.me/nunopenim."""
 
 IMPORTED = {}
 MIGRATEABLE = []
@@ -83,9 +77,6 @@ STATS = []
 USER_INFO = []
 DATA_IMPORT = []
 DATA_EXPORT = []
-
-CHAT_SETTINGS = {}
-USER_SETTINGS = {}
 
 GDPR = []
 
@@ -120,12 +111,6 @@ for module_name in ALL_MODULES:
 
     if hasattr(imported_module, "__export_data__"):
         DATA_EXPORT.append(imported_module)
-
-    if hasattr(imported_module, "__chat_settings__"):
-        CHAT_SETTINGS[imported_module.__mod_name__.lower()] = imported_module
-
-    if hasattr(imported_module, "__user_settings__"):
-        USER_SETTINGS[imported_module.__mod_name__.lower()] = imported_module
 
 
 def send_help(
@@ -378,221 +363,6 @@ def get_help(update: Update, context: CallbackContext):
         )
 
 
-def send_settings(chat_id, user_id, user=False):
-    if user:
-        if USER_SETTINGS:
-            settings = "\n\n".join(
-                "*{}*:\n{}".format(mod.__mod_name__, mod.__user_settings__(user_id))
-                for mod in USER_SETTINGS.values()
-            )
-            dispatcher.bot.send_message(
-                user_id,
-                "These are your current settings:" + "\n\n" + settings,
-                parse_mode=ParseMode.MARKDOWN,
-            )
-
-        else:
-            dispatcher.bot.send_message(
-                user_id,
-                "Seems like there aren't any user specific settings available :'(",
-                parse_mode=ParseMode.MARKDOWN,
-            )
-
-    else:
-        if CHAT_SETTINGS:
-            chat_name = dispatcher.bot.getChat(chat_id).title
-            dispatcher.bot.send_message(
-                user_id,
-                text="Which module would you like to check {}'s settings for?".format(
-                    chat_name
-                ),
-                reply_markup=InlineKeyboardMarkup(
-                    paginate_modules(0, CHAT_SETTINGS, "stngs", chat=chat_id)
-                ),
-            )
-        else:
-            dispatcher.bot.send_message(
-                user_id,
-                "Seems like there aren't any chat settings available :'(\nSend this "
-                "in a group chat you're admin in to find its current settings!",
-                parse_mode=ParseMode.MARKDOWN,
-            )
-
-
-def settings_button(update: Update, context: CallbackContext):
-    bot = context.bot
-    query = update.callback_query
-    user = update.effective_user
-    mod_match = re.match(r"stngs_module\((.+?),(.+?)\)", query.data)
-    prev_match = re.match(r"stngs_prev\((.+?),(.+?)\)", query.data)
-    next_match = re.match(r"stngs_next\((.+?),(.+?)\)", query.data)
-    back_match = re.match(r"stngs_back\((.+?)\)", query.data)
-    try:
-        if mod_match:
-            chat_id = mod_match.group(1)
-            module = mod_match.group(2)
-            chat = bot.get_chat(chat_id)
-            text = "*{}* has the following settings for the *{}* module:\n\n".format(
-                escape_markdown(chat.title), CHAT_SETTINGS[module].__mod_name__
-            ) + CHAT_SETTINGS[module].__chat_settings__(chat_id, user.id)
-            query.message.edit_text(
-                text=text,
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton(
-                                text="Back",
-                                callback_data="stngs_back({})".format(chat_id),
-                            )
-                        ]
-                    ]
-                ),
-            )
-
-        elif prev_match:
-            chat_id = prev_match.group(1)
-            curr_page = int(prev_match.group(2))
-            chat = bot.get_chat(chat_id)
-            query.message.edit_text(
-                "Hi there! There are quite a few settings for {} - go ahead and pick what "
-                "you're interested in.".format(chat.title),
-                reply_markup=InlineKeyboardMarkup(
-                    paginate_modules(
-                        curr_page - 1, CHAT_SETTINGS, "stngs", chat=chat_id
-                    )
-                ),
-            )
-
-        elif next_match:
-            chat_id = next_match.group(1)
-            next_page = int(next_match.group(2))
-            chat = bot.get_chat(chat_id)
-            query.message.edit_text(
-                "Hi there! There are quite a few settings for {} - go ahead and pick what "
-                "you're interested in.".format(chat.title),
-                reply_markup=InlineKeyboardMarkup(
-                    paginate_modules(
-                        next_page + 1, CHAT_SETTINGS, "stngs", chat=chat_id
-                    )
-                ),
-            )
-
-        elif back_match:
-            chat_id = back_match.group(1)
-            chat = bot.get_chat(chat_id)
-            query.message.edit_text(
-                text="Hi there! There are quite a few settings for {} - go ahead and pick what "
-                "you're interested in.".format(escape_markdown(chat.title)),
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=InlineKeyboardMarkup(
-                    paginate_modules(0, CHAT_SETTINGS, "stngs", chat=chat_id)
-                ),
-            )
-
-        # ensure no spinny white circle
-        bot.answer_callback_query(query.id)
-    except BadRequest as excp:
-        if excp.message == "Message is not modified":
-            pass
-        elif excp.message == "Query_id_invalid":
-            pass
-        elif excp.message == "Message can't be deleted":
-            pass
-        else:
-            LOGGER.exception("Exception in settings buttons. %s", str(query.data))
-
-
-def get_settings(update: Update, context: CallbackContext):
-    bot = context.bot
-    chat = update.effective_chat  # type: Optional[Chat]
-    user = update.effective_user  # type: Optional[User]
-    msg = update.effective_message  # type: Optional[Message]
-    args = msg.text.split(None, 1)
-
-    # ONLY send settings in PM
-    if chat.type != chat.PRIVATE:
-        if is_user_admin(chat, user.id):
-            text = "Click here to get this chat's settings, as well as yours."
-            msg.reply_text(
-                text,
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton(
-                                text="Settings",
-                                url="t.me/{}?start=stngs_{}".format(
-                                    bot.username, chat.id
-                                ),
-                            )
-                        ]
-                    ]
-                ),
-            )
-        else:
-            text = "Click here to check your settings."
-
-    else:
-        send_settings(chat.id, user.id, True)
-
-
-def donate(update: Update, context: CallbackContext):
-    bot = context.bot
-    user = update.effective_message.from_user
-    chat = update.effective_chat  # type: Optional[Chat]
-
-    if chat.type == "private":
-        update.effective_message.reply_text(
-            DONATE_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True
-        )
-
-        update.effective_message.reply_text(
-            "You can also donate to my creator, SonOfLars, for all his work to get me where i am now. There are two ways of paying him: [PayPal](paypal.me/PaulSonOfLars), or [Monzo](monzo.me/paulnionvestergaardlarsen).",
-            parse_mode=ParseMode.MARKDOWN,
-            disable_web_page_preview=True,
-        )
-
-    else:
-        try:
-            bot.send_message(
-                user.id,
-                DONATE_STRING,
-                parse_mode=ParseMode.MARKDOWN,
-                disable_web_page_preview=True,
-            )
-
-            update.effective_message.reply_text(
-                "I've PM'ed you about donating to my owner!"
-            )
-        except Unauthorized:
-            update.effective_message.reply_text(
-                "Contact me in PM first to get donation information."
-            )
-
-
-def source(update: Update, context: CallbackContext):
-    bot = context.bot
-    user = update.effective_message.from_user
-    chat = update.effective_chat  # type: Optional[Chat]
-
-    if chat.type == "private":
-        update.effective_message.reply_text(
-            SOURCE_STRING, parse_mode=ParseMode.MARKDOWN
-        )
-
-    else:
-        try:
-            bot.send_message(user.id, SOURCE_STRING, parse_mode=ParseMode.MARKDOWN)
-
-            update.effective_message.reply_text(
-                "You'll find in PM more info about my sourcecode."
-            )
-        except Unauthorized:
-            update.effective_message.reply_text(
-                "Contact me in PM first to get source information."
-            )
-
-
 def migrate_chats(update: Update, context: CallbackContext):
     bot = context.bot
     msg = update.effective_message  # type: Optional[Message]
@@ -643,13 +413,6 @@ def main():
         help_button, pattern=r"help_", run_async=True
     )
 
-    settings_handler = CommandHandler("settings", get_settings, run_async=True)
-    settings_callback_handler = CallbackQueryHandler(
-        settings_button, pattern=r"stngs_", run_async=True
-    )
-
-    donate_handler = CommandHandler("donate", donate, run_async=True)
-    source_handler = CommandHandler("source", source, run_async=True)
     migrate_handler = MessageHandler(Filters.status_update.migrate, migrate_chats)
 
     rhelp_handler = CommandHandler(
@@ -658,12 +421,8 @@ def main():
 
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(help_handler)
-    dispatcher.add_handler(source_handler)
-    dispatcher.add_handler(settings_handler)
     dispatcher.add_handler(help_callback_handler)
-    dispatcher.add_handler(settings_callback_handler)
     dispatcher.add_handler(migrate_handler)
-    dispatcher.add_handler(donate_handler)
     dispatcher.add_handler(rhelp_handler)
 
     # dispatcher.add_error_handler(error_callback)
