@@ -36,6 +36,7 @@ from tg_bot import (
 # needed to dynamically load modules
 # NOTE: Module order is not guaranteed, specify that in the config file!
 from tg_bot.modules import ALL_MODULES
+from tg_bot.utils.updater import process_update
 from tg_bot.utils.chat_status import is_user_admin
 from tg_bot.utils.misc import paginate_modules
 
@@ -424,10 +425,9 @@ def main():
     dispatcher.add_handler(help_callback_handler)
     dispatcher.add_handler(migrate_handler)
     dispatcher.add_handler(rhelp_handler)
-
     # dispatcher.add_error_handler(error_callback)
 
-    # add antiflood processor
+    # Add alternative updater for avoiding floods & Nonetype errors.
     Dispatcher.process_update = process_update
 
     if WEBHOOK:
@@ -444,75 +444,6 @@ def main():
         updater.start_polling(timeout=15, read_latency=4)
 
     updater.idle()
-
-
-CHATS_CNT = {}
-CHATS_TIME = {}
-
-
-def process_update(self, update):
-    # An error happened while polling
-    if isinstance(update, TelegramError):
-        try:
-            self.dispatch_error(None, update)
-        except Exception:
-            self.logger.exception(
-                "An uncaught error was raised while handling the error"
-            )
-        return
-
-    now = datetime.datetime.utcnow()
-    updatedChat = update.effective_chat
-    if hasattr(updatedChat, "id"):
-        cnt = CHATS_CNT.get(updatedChat.id, 0)
-        t = CHATS_TIME.get(updatedChat.id, datetime.datetime(1970, 1, 1))
-    else:  # investigating new nonetype error solutions
-        return  # halting process if NoneType object is encountered
-
-    if t and now > t + datetime.timedelta(0, 1):
-        CHATS_TIME[update.effective_chat.id] = now
-        cnt = 0
-    else:
-        cnt += 1
-
-    if cnt > 10:
-        return
-
-    CHATS_CNT[update.effective_chat.id] = cnt
-    for group in self.groups:
-        try:
-            for handler in (x for x in self.handlers[group] if x.check_update(update)):
-                check = handler.check_update(update)
-                context = CallbackContext.from_update(update, self)
-                handler.handle_update(update, self, check, context)
-                break
-
-        # Stop processing with any other handler.
-        except DispatcherHandlerStop:
-            self.logger.debug("Stopping further handlers due to DispatcherHandlerStop")
-            break
-
-        # Dispatch any error.
-        except TelegramError as te:
-            self.logger.warning(
-                "A TelegramError was raised while processing the Update"
-            )
-
-            try:
-                self.dispatch_error(update, te)
-            except DispatcherHandlerStop:
-                self.logger.debug("Error handler stopped further handlers")
-                break
-            except Exception:
-                self.logger.exception(
-                    "An uncaught error was raised while handling the error"
-                )
-
-        # Errors should not stop the thread.
-        except Exception:
-            self.logger.exception(
-                "An uncaught error was raised while processing the update"
-            )
 
 
 if __name__ == "__main__":
