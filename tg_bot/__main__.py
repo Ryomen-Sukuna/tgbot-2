@@ -30,6 +30,8 @@ from tg_bot import (
     URL,
     LOGGER,
     ALLOW_EXCL,
+    INFO_START,
+    INFO_HELP,
 )
 
 # needed to dynamically load modules
@@ -38,39 +40,37 @@ from tg_bot.modules import ALL_MODULES
 from tg_bot.utils.chat_status import is_user_admin
 from tg_bot.utils.misc import paginate_modules
 
-PM_START_TEXT = """
-Hello {}, my name is *{}*! I'm a group manager bot.
-
-You can find the list of available commands with /help. 
-
-If you can't find answer to your question, if you want to submit a bug or a feature request - feel free to do it in @bot\_workshop group.
-
-We have a news channel too, @bot\_workshop\_channel, for announcements regarding features added, downtime etc.
-
-Last but not least, if you enjoy using me and/or you want to contribute you can hit /donate to help funding my hosting services.
-"""
+START_STRING = """
+Hello {username}! My name is <b>{botname}</b>, \
+a group management bot to help you manage groups!
+{info}
+Hit /help if you want to know more about me!
+""".format(
+    username="{username}", botname="{botname}", info=INFO_START if INFO_START else ""
+)
 
 SOURCE_STRING = """
 I'm built in python3, using the python-telegram-bot library, and am fully opensource - you can find what makes me tick [here](https://github.com/corsicanu/tgbot)
 """
 
-HELP_STRINGS = """
-Have a look at the following for an idea of some of \
-the things I can help you with.
-{}
-*Main* commands available:
- - /start: start the bot
- - /help: PM's you this message.
- - /help <module name>: PM's you info about that module.
- - /donate: info about how to donate
- - /source: info about my sourcecode
- - /settings:
-   - in PM: will send you your settings for all supported modules.
-   - in a group: will redirect you to pm, with all that chat's settings.
+HELP_STRING = """
+<b>Help</b>
 
-Other available commands:
+Hey there! My name is <b>{botname}</b>.
+I am <b>a group management bot</b>, having a lot of useful features \
+which may help you operate groups you are in!
+
+<b>User commands:</b>
+ - /start: Start me. You've probably already used this.
+ - /help: Send this message.
+   -> /help <code>&lt;module&gt;</code>: \
+Send you info of the module.
+{info}
+All commands can be used with the following: <code>/</code> {cmd}
 """.format(
-    "" if not ALLOW_EXCL else "\nAll commands can either be used with / or !.\n"
+    botname="{botname}",
+    cmd="or <code>!</code>" if ALLOW_EXCL else "",
+    info=INFO_HELP if INFO_HELP else "",
 )
 
 DONATE_STRING = """
@@ -128,62 +128,120 @@ for module_name in ALL_MODULES:
         USER_SETTINGS[imported_module.__mod_name__.lower()] = imported_module
 
 
-# do not async
-def send_help(chat_id, text, keyboard=None):
-    if not keyboard:
-        keyboard = InlineKeyboardMarkup(paginate_modules(0, HELPABLE, "help"))
-    dispatcher.bot.send_message(
-        chat_id=chat_id, text=text, parse_mode=ParseMode.MARKDOWN, reply_markup=keyboard
-    )
+def send_help(
+    text: str,
+    chat: Update.effective_chat = None,
+    query: Update.callback_query = None,
+    keyboard: InlineKeyboardMarkup = None,
+):
+    bot = Dispatcher.bot
+
+    # if Keyboard == "helpKB", use default help buttons markup.
+    if keyboard == "helpKB":
+        kb = paginate_modules(0, HELPABLE, "help")
+        help_keyboard = InlineKeyboardMarkup(kb)
+    # Else, use keyboard if it's not None.
+    elif keyboard:
+        help_keyboard = InlineKeyboardMarkup(keyboard)
+    else:
+        help_keyboard = None
+
+    # Edit message when query is not None (Maybe callback?).
+    if query:
+        query.message.edit_text(
+            text=text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=help_keyboard,
+            disable_web_page_preview=True,
+        )
+    elif chat:
+        bot.send_message(
+            chat_id=chat.id,
+            text=text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=help_keyboard,
+            disable_web_page_preview=True,
+        )
 
 
 def start(update: Update, context: CallbackContext):
-    bot = context.bot
-    args = context.args
-    if update.effective_chat.type == "private":
+    bot, args = context.bot, context.args
+    chat = update.effective_chat  # type: Optional[Chat]
+    user = update.effective_user  # type: Optional[User]
+    msg = update.effective_message  # type: Optional[Message]
+
+    # Most of stuffs must require PM.
+    if chat.type == "private":
         if len(args) >= 1:
-            if args[0].lower() == "help":
-                send_help(update.effective_chat.id, HELP_STRINGS)
+            # If "help", send help pages.
+            if args[0].lower()[:4] == "help":
+                # If "help_<module_name>", send module help.
+                if any(args[0].lower().replace("help_", "") == x for x in HELPABLE):
+                    help_mod = HELPABLE[args[0].lower().replace("help_", "")]
+                    text = f"<b>{help_mod.__mod_name__}</b>\n{help_mod.__help__}"
 
-            elif args[0].lower().startswith("stngs_"):
-                match = re.match("stngs_(.*)", args[0].lower())
-                chat = dispatcher.bot.getChat(match.group(1))
+                    # Append keyboard from __help_kb__ & add help_back keyboard.
+                    if hasattr(help_mod, "__help_kb__"):
+                        keyboard = help_mod.__help_kb__.copy()
+                        keyboard.append(
+                            [
+                                InlineKeyboardButton(
+                                    text="Back", callback_data="help_back"
+                                )
+                            ]
+                        )
+                    else:
+                        keyboard = [
+                            [
+                                InlineKeyboardButton(
+                                    text="Back", callback_data="help_back"
+                                )
+                            ]
+                        ]
 
-                if is_user_admin(chat, update.effective_user.id):
-                    send_settings(match.group(1), update.effective_user.id, False)
+                    send_help(
+                        text,
+                        chat=chat,
+                        keyboard=keyboard,
+                    )
+
                 else:
-                    send_settings(match.group(1), update.effective_user.id, True)
+                    send_help(
+                        HELP_STRING.format(botname=bot.first_name),
+                        chat=chat,
+                        keyboard="helpKB",
+                    )
 
-            elif args[0][1:].isdigit() and "rules" in IMPORTED:
+                return
+
+            # Send rules.
+            if args[0][1:].isdecimal() and "rules" in IMPORTED:
                 IMPORTED["rules"].send_rules(update, args[0], from_pm=True)
+                return
 
-        else:
-            first_name = update.effective_user.first_name
-            update.effective_message.reply_text(
-                PM_START_TEXT.format(
-                    escape_markdown(first_name), escape_markdown(bot.first_name)
-                ),
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton(
-                                text="Add me to your group !",
-                                url="t.me/{}?startgroup=true".format(bot.username),
-                            )
-                        ],
-                        [
-                            InlineKeyboardButton(
-                                text="Need some help ?",
-                                url="t.me/{}?start=help".format(bot.username),
-                            )
-                        ],
-                    ]
-                ),
-                disable_web_page_preview=True,
+        # Send start.
+        text = START_STRING.format(
+            username=user.first_name,
+            botname=bot.first_name,
+        )
+        keyboard = [
+            InlineKeyboardButton(
+                text="Add me to your group!",
+                url="t.me/{}?startgroup=true".format(bot.username),
             )
-    else:
-        update.effective_message.reply_text("Yo, whadup?")
+        ]
+
+        msg.reply_text(
+            text=text,
+            parse_mode=ParseMode.HTML,
+            reply_markup=InlineKeyboardMarkup([keyboard]),
+            disable_web_page_preview=True,
+        )
+
+        return
+
+    # Send the bot is alive.
+    msg.reply_text("Hey there, I'm alive!")
 
 
 # for test purposes
@@ -220,59 +278,55 @@ def error_callback(update, context):
 def help_button(update: Update, context: CallbackContext):
     bot = context.bot
     query = update.callback_query
+
     mod_match = re.match(r"help_module\((.+?)\)", query.data)
     prev_match = re.match(r"help_prev\((.+?)\)", query.data)
     next_match = re.match(r"help_next\((.+?)\)", query.data)
     back_match = re.match(r"help_back", query.data)
+
     try:
         if mod_match:
             module = mod_match.group(1)
-            text = HELPABLE[module].__help__
-            query.message.edit_text(
-                text=text,
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=InlineKeyboardMarkup(
-                    [[InlineKeyboardButton(text="Back", callback_data="help_back")]]
-                ),
-            )
+            help_mod = HELPABLE[module]
+            # Add module name in front of module help.
+            help_text = f"<b>{help_mod.__mod_name__}</b>\n{help_mod.__help__}"
 
-        elif prev_match:
-            curr_page = int(prev_match.group(1))
-            query.message.edit_text(
-                HELP_STRINGS,
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=InlineKeyboardMarkup(
-                    paginate_modules(curr_page - 1, HELPABLE, "help")
-                ),
-            )
+            # Append keyboard from __help_kb__ & add help_back keyboard.
+            if hasattr(help_mod, "__help_kb__"):
+                keyboard = help_mod.__help_kb__.copy()
+                keyboard.append(
+                    [InlineKeyboardButton(text="Back", callback_data="help_back")]
+                )
+            else:
+                keyboard = [
+                    [InlineKeyboardButton(text="Back", callback_data="help_back")]
+                ]
 
-        elif next_match:
-            next_page = int(next_match.group(1))
-            query.message.edit_text(
-                HELP_STRINGS,
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=InlineKeyboardMarkup(
-                    paginate_modules(next_page + 1, HELPABLE, "help")
-                ),
-            )
+            send_help(help_text, query=query, keyboard=keyboard)
 
-        elif back_match:
-            query.message.edit_text(
-                text=HELP_STRINGS,
-                parse_mode=ParseMode.MARKDOWN,
-                reply_markup=InlineKeyboardMarkup(
-                    paginate_modules(0, HELPABLE, "help")
-                ),
-            )
+        if prev_match:
+            page = int(prev_match.group(1))
+            help_text = HELP_STRING.format(botname=bot.first_name)
+            keyboard = paginate_modules(page - 1, HELPABLE, "help")
 
-        # ensure no spinny white circle
+            send_help(help_text, query=query, keyboard=[keyboard])
+
+        if next_match:
+            page = int(next_match.group(1))
+            help_text = HELP_STRING.format(botname=bot.first_name)
+            keyboard = paginate_modules(page + 1, HELPABLE, "help")
+
+            send_help(help_text, query=query, keyboard=[keyboard])
+
+        if back_match:
+            help_text = HELP_STRING.format(botname=bot.first_name)
+            send_help(help_text, query=query, keyboard="helpKB")
+
+        # Ensure not to make a spin.
         bot.answer_callback_query(query.id)
+
     except BadRequest as excp:
-        if excp.message == "Message is not modified":
-            pass
-        elif excp.message == "Query_id_invalid":
-            pass
-        elif excp.message == "Message can't be deleted":
+        if excp.message in ("Message is not modified", "Query_id_invalid"):
             pass
         else:
             LOGGER.exception("Exception in help buttons. %s", str(query.data))
@@ -281,43 +335,47 @@ def help_button(update: Update, context: CallbackContext):
 def get_help(update: Update, context: CallbackContext):
     bot = context.bot
     chat = update.effective_chat  # type: Optional[Chat]
+    msg = update.effective_message  # type: Optional[Message]
     args = update.effective_message.text.split(None, 1)
 
-    # ONLY send help in PM
+    # Send help strings only in PM.
     if chat.type != chat.PRIVATE:
+        if len(args) >= 2 and any(args[1].lower() == x for x in HELPABLE):
+            module = f"{args[1].lower()}"
+        else:
+            module = ""
+        text = "Contact me in PM for help."
+        url = f"t.me/{bot.username}?start=help_{module}"
+        keyboard = [InlineKeyboardButton(text="Help", url=url)]
 
-        update.effective_message.reply_text(
-            "Contact me in PM to get the list of possible commands.",
-            reply_markup=InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            text="Help", url="t.me/{}?start=help".format(bot.username)
-                        )
-                    ]
-                ]
-            ),
-        )
+        msg.reply_text(text=text, reply_markup=InlineKeyboardMarkup([keyboard]))
         return
 
-    elif len(args) >= 2 and any(args[1].lower() == x for x in HELPABLE):
-        module = args[1].lower()
-        text = (
-            "Here is the available help for the *{}* module:\n".format(
-                HELPABLE[module].__mod_name__
+    # Send module help.
+    if len(args) >= 2 and any(args[1].lower() == x for x in HELPABLE):
+        help_mod = HELPABLE[args[1].lower()]
+        text = f"<b>{help_mod.__mod_name__}</b>\n{help_mod.__help__}"
+
+        # Append keyboard from __help_kb__ & add help_back keyboard.
+        if hasattr(help_mod, "__help_kb__"):
+            keyboard = help_mod.__help_kb__.copy()
+            keyboard.append(
+                [InlineKeyboardButton(text="Back", callback_data="help_back")]
             )
-            + HELPABLE[module].__help__
-        )
+        else:
+            keyboard = [[InlineKeyboardButton(text="Back", callback_data="help_back")]]
+
         send_help(
-            chat.id,
             text,
-            InlineKeyboardMarkup(
-                [[InlineKeyboardButton(text="Back", callback_data="help_back")]]
-            ),
+            chat=chat,
+            keyboard=keyboard,
         )
 
+    # Send help.
     else:
-        send_help(chat.id, HELP_STRINGS)
+        send_help(
+            HELP_STRING.format(botname=bot.first_name), chat=chat, keyboard="helpKB"
+        )
 
 
 def send_settings(chat_id, user_id, user=False):

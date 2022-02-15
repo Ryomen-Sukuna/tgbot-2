@@ -50,6 +50,8 @@ class Config(object):
     START_STICKER_ID = "CAADAgAD0QMAAjq5FQKizo2AiTQCBQI"  # putin hand sticker
     ALLOW_EXCL = False  # Allow ! commands as well as /
     API_OPENWEATHER = None  # OpenWeather API
+    INFO_START = ""  # Your bot's specific information on `/start`.
+    INFO_HELP = ""  # Your bot's specific information on `/help`.
 
 
 class Production(Config):
