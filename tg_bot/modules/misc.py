@@ -330,30 +330,25 @@ def slap(update: Update, context: CallbackContext):
 
     # get user who sent message
     if msg.from_user.username:
-        curr_user = "@" + escape_markdown(msg.from_user.username)
+        curr_user = f"@{escape_markdown(msg.from_user.username)}"
     else:
         curr_user = "[{}](tg://user?id={})".format(
             msg.from_user.first_name, msg.from_user.id
         )
 
     user_id = extract_user(update.effective_message, args)
-    if user_id in (bot.id, 777000):
+    if user_id in (bot.id, 777000) or not user_id:
         user1 = "[{}](tg://user?id={})".format(bot.first_name, bot.id)
         user2 = curr_user
-    elif user_id:
+    else:
         slapped_user = bot.get_chat(user_id)
         user1 = curr_user
         if slapped_user.username:
-            user2 = "@" + escape_markdown(slapped_user.username)
+            user2 = f"@{escape_markdown(slapped_user.username)}"
         else:
             user2 = "[{}](tg://user?id={})".format(
                 slapped_user.first_name, slapped_user.id
             )
-
-    # if no target found, bot targets the sender
-    else:
-        user1 = "[{}](tg://user?id={})".format(bot.first_name, bot.id)
-        user2 = curr_user
 
     temp = random.choice(SLAP_TEMPLATES)
     item = random.choice(ITEMS)
@@ -379,30 +374,25 @@ def punch(update: Update, context: CallbackContext):
 
     # get user who sent message
     if msg.from_user.username:
-        curr_user = "@" + escape_markdown(msg.from_user.username)
+        curr_user = f"@{escape_markdown(msg.from_user.username)}"
     else:
         curr_user = "[{}](tg://user?id={})".format(
             msg.from_user.first_name, msg.from_user.id
         )
 
     user_id = extract_user(update.effective_message, args)
-    if user_id in (bot.id, 777000):
+    if user_id in (bot.id, 777000) or not user_id:
         user1 = "[{}](tg://user?id={})".format(bot.first_name, bot.id)
         user2 = curr_user
-    elif user_id:
+    else:
         slapped_user = bot.get_chat(user_id)
         user1 = curr_user
         if slapped_user.username:
-            user2 = "@" + escape_markdown(slapped_user.username)
+            user2 = f"@{escape_markdown(slapped_user.username)}"
         else:
             user2 = "[{}](tg://user?id={})".format(
                 slapped_user.first_name, slapped_user.id
             )
-
-    # if no target found, bot targets the sender
-    else:
-        user1 = "[{}](tg://user?id={})".format(bot.first_name, bot.id)
-        user2 = curr_user
 
     temp = random.choice(PUNCH_TEMPLATES)
     punch = random.choice(PUNCH)
@@ -414,8 +404,7 @@ def punch(update: Update, context: CallbackContext):
 
 def get_id(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
-    user_id = extract_user(update.effective_message, args)
-    if user_id:
+    if user_id := extract_user(update.effective_message, args):
         if (
             update.effective_message.reply_to_message
             and update.effective_message.reply_to_message.forward_from
@@ -465,7 +454,7 @@ def info(update: Update, context: CallbackContext):
         )
         return
 
-    elif user_id and int(user_id) == 1087968824:
+    elif user_id:
         msg.reply_text(
             "This is Group Anonymous Bot. Unless you manually entered this reserved account's ID, it is likely a broadcast from a linked channel or anonymously sent message."
         )
@@ -504,28 +493,26 @@ def info(update: Update, context: CallbackContext):
 
     if user.id == OWNER_ID:
         text += "\n\nThis person is my owner - I would never do anything against them!"
+    elif user.id in SUDO_USERS:
+        text += (
+            "\nThis person is one of my sudo users! "
+            "Nearly as powerful as my owner - so watch it."
+        )
     else:
-        if user.id in SUDO_USERS:
+        if user.id in SUPPORT_USERS:
             text += (
-                "\nThis person is one of my sudo users! "
-                "Nearly as powerful as my owner - so watch it."
+                "\nThis person is one of my support users! "
+                "Not quite a sudo user, but can still gban you off the map."
             )
-        else:
-            if user.id in SUPPORT_USERS:
-                text += (
-                    "\nThis person is one of my support users! "
-                    "Not quite a sudo user, but can still gban you off the map."
-                )
 
-            if user.id in WHITELIST_USERS:
-                text += (
-                    "\nThis person has been whitelisted! "
-                    "That means I'm not allowed to ban/kick them."
-                )
+        if user.id in WHITELIST_USERS:
+            text += (
+                "\nThis person has been whitelisted! "
+                "That means I'm not allowed to ban/kick them."
+            )
 
     for mod in USER_INFO:
-        mod_info = mod.__user_info__(user.id).strip()
-        if mod_info:
+        if mod_info := mod.__user_info__(user.id).strip():
             text += "\n\n" + mod_info
 
     update.effective_message.reply_text(text, parse_mode=ParseMode.HTML)
@@ -544,7 +531,11 @@ def echo(update: Update, context: CallbackContext):
 
 def gdpr(update: Update, context: CallbackContext):
     bot, args = context.bot, context.args
-    if update.effective_user.id not in SUDO_USERS:
+    if (
+        update.effective_user.id in SUDO_USERS
+        and len(args) == 0
+        or update.effective_user.id not in SUDO_USERS
+    ):
         update.effective_message.reply_text("Deleting identifiable data...")
         for mod in GDPR:
             mod.__gdpr__(update.effective_user.id)
@@ -559,32 +550,17 @@ def gdpr(update: Update, context: CallbackContext):
             parse_mode=ParseMode.MARKDOWN,
         )
     else:
-        if len(args) == 0:
-            update.effective_message.reply_text("Deleting identifiable data...")
+        user_id = extract_user(update.effective_message, args)
+        try:
             for mod in GDPR:
-                mod.__gdpr__(update.effective_user.id)
+                mod.__gdpr__(user_id)
             update.effective_message.reply_text(
-                "Your personal data has been deleted.\n\nNote that this will not unban "
-                "you from any chats, as that is telegram data, not this bot's data. "
-                "Flooding, warns, and gbans are also preserved, as of "
-                "[this](https://ico.org.uk/for-organisations/guide-to-the-general-data-protection-regulation-gdpr/individual-rights/right-to-erasure/), "
-                "which clearly states that the right to erasure does not apply "
-                '"for the performance of a task carried out in the public interest", as is '
-                "the case for the aforementioned pieces of data.",
-                parse_mode=ParseMode.MARKDOWN,
+                "User data has been deleted", parse_mode=ParseMode.MARKDOWN
             )
-        else:
-            user_id = extract_user(update.effective_message, args)
-            try:
-                for mod in GDPR:
-                    mod.__gdpr__(user_id)
-                update.effective_message.reply_text(
-                    "User data has been deleted", parse_mode=ParseMode.MARKDOWN
-                )
-            except:
-                update.effective_message.reply_text(
-                    "User is not in my DB!", parse_mode=ParseMode.MARKDOWN
-                )
+        except:
+            update.effective_message.reply_text(
+                "User is not in my DB!", parse_mode=ParseMode.MARKDOWN
+            )
 
 
 MARKDOWN_HELP = """
@@ -616,7 +592,7 @@ def markdown_help(update: Update, context: CallbackContext):
     chat = update.effective_chat
     msg = update.effective_message
 
-    if not chat.type == "private":
+    if chat.type != "private":
         msg.reply_text("This command is made to be used in PM!")
         return
 

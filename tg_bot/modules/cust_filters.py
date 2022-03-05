@@ -43,7 +43,7 @@ def list_handlers(update: Update, context: CallbackContext):
         else:
             filter_list += entry
 
-    if not filter_list == BASIC_FILTER_STRING:
+    if filter_list != BASIC_FILTER_STRING:
         update.effective_message.reply_text(
             filter_list.format(chat_name), parse_mode=telegram.ParseMode.MARKDOWN
         )
@@ -217,19 +217,19 @@ def reply_filter(update: Update, context: CallbackContext):
                         reply_markup=keyboard,
                     )
                 except BadRequest as excp:
-                    if excp.message == "Unsupported url protocol":
-                        message.reply_text(
-                            "You seem to be trying to use an unsupported url protocol. Telegram "
-                            "doesn't support buttons for some protocols, such as tg://. Please try "
-                            "again, or ask in @bot_workshop for help."
-                        )
-                    elif excp.message == "Reply message not found":
+                    if excp.message == "Reply message not found":
                         bot.send_message(
                             chat.id,
                             filt.reply,
                             parse_mode=ParseMode.MARKDOWN,
                             disable_web_page_preview=True,
                             reply_markup=keyboard,
+                        )
+                    elif excp.message == "Unsupported url protocol":
+                        message.reply_text(
+                            "You seem to be trying to use an unsupported url protocol. Telegram "
+                            "doesn't support buttons for some protocols, such as tg://. Please try "
+                            "again, or ask in @bot_workshop for help."
                         )
                     else:
                         message.reply_text(

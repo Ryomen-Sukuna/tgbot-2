@@ -60,24 +60,25 @@ def set_flood_strength(chat_id, soft_flood):
 
 
 def update_flood(chat_id: str, user_id) -> bool:
-    if str(chat_id) in CHAT_FLOOD:
-        curr_user_id, count, limit = CHAT_FLOOD.get(str(chat_id), DEF_OBJ)
+    if str(chat_id) not in CHAT_FLOOD:
+        return
+    curr_user_id, count, limit = CHAT_FLOOD.get(str(chat_id), DEF_OBJ)
 
-        if limit == 0:  # no antiflood
-            return False
-
-        if user_id != curr_user_id or user_id is None:  # other user
-            CHAT_FLOOD[str(chat_id)] = (user_id, DEF_COUNT + 1, limit)
-            return False
-
-        count += 1
-        if count > limit:  # too many msgs, kick
-            CHAT_FLOOD[str(chat_id)] = (None, DEF_COUNT, limit)
-            return True
-
-        # default -> update
-        CHAT_FLOOD[str(chat_id)] = (user_id, count, limit)
+    if limit == 0:  # no antiflood
         return False
+
+    if user_id != curr_user_id or user_id is None:  # other user
+        CHAT_FLOOD[str(chat_id)] = (user_id, DEF_COUNT + 1, limit)
+        return False
+
+    count += 1
+    if count > limit:  # too many msgs, kick
+        CHAT_FLOOD[str(chat_id)] = (None, DEF_COUNT, limit)
+        return True
+
+    # default -> update
+    CHAT_FLOOD[str(chat_id)] = (user_id, count, limit)
+    return False
 
 
 def get_flood_limit(chat_id):
@@ -86,8 +87,7 @@ def get_flood_limit(chat_id):
 
 def get_flood_strength(chat_id):
     try:
-        soft_flood = SESSION.query(FloodControl).get(str(chat_id))
-        if soft_flood:
+        if soft_flood := SESSION.query(FloodControl).get(str(chat_id)):
             return soft_flood.soft_flood
         return 3, False
 
@@ -97,8 +97,7 @@ def get_flood_strength(chat_id):
 
 def migrate_chat(old_chat_id, new_chat_id):
     with INSERTION_LOCK:
-        flood = SESSION.query(FloodControl).get(str(old_chat_id))
-        if flood:
+        if flood := SESSION.query(FloodControl).get(str(old_chat_id)):
             CHAT_FLOOD[str(new_chat_id)] = CHAT_FLOOD.get(str(old_chat_id), DEF_OBJ)
             flood.chat_id = str(new_chat_id)
             SESSION.commit()

@@ -98,8 +98,7 @@ class CustomCommandHandler(CommandHandler):
             and not is_user_admin(update.effective_chat, update.effective_user.id)
         ):
             args = update.effective_message.text.split()[1:]
-            filter_result = self.filters(update)
-            if filter_result:
+            if filter_result := self.filters(update):
                 return args, filter_result
             return False
 
@@ -112,10 +111,6 @@ def restr_members(
     bot, chat_id, members, messages=False, media=False, other=False, previews=False
 ):
     for mem in members:
-        if mem.user in SUDO_USERS:
-            pass
-        elif mem.user in (777000, 1087968824):
-            pass
         try:
             bot.restrict_chat_member(
                 chat_id,
@@ -308,10 +303,7 @@ def del_lockables(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     message = update.effective_message  # type: Optional[Message]
     user = update.effective_user
-    if int(user.id) in (
-        777000,
-        1087968824,
-    ):  # 777000 is the telegram notification service bot ID.
+    if int(user.id) in {777000, 1087968824}:  # 777000 is the telegram notification service bot ID.
         return  # Group channel notifications are sent via this bot. This adds exception to this userid
 
     for lockable, filter in LOCK_TYPES.items():
@@ -339,9 +331,7 @@ def del_lockables(update: Update, context: CallbackContext):
                 try:
                     message.delete()
                 except BadRequest as excp:
-                    if excp.message == "Message to delete not found":
-                        pass
-                    else:
+                    if excp.message != "Message to delete not found":
                         LOGGER.exception("ERROR in lockables")
 
             break
@@ -368,9 +358,7 @@ def rest_handler(update: Update, context: CallbackContext):
             try:
                 msg.delete()
             except BadRequest as excp:
-                if excp.message == "Message to delete not found":
-                    pass
-                else:
+                if excp.message != "Message to delete not found":
                     LOGGER.exception("ERROR in restrictions")
             break
 
@@ -382,58 +370,58 @@ def build_lock_message(chat_id):
         res = "There are no current locks in this chat."
     else:
         res = "These are the locks in this chat:"
-        if locks:
-            res += (
-                "\n - sticker = `{}`"
-                "\n - audio = `{}`"
-                "\n - voice = `{}`"
-                "\n - document = `{}`"
-                "\n - video = `{}`"
-                "\n - videonote = `{}`"
-                "\n - contact = `{}`"
-                "\n - photo = `{}`"
-                "\n - gif = `{}`"
-                "\n - url = `{}`"
-                "\n - bots = `{}`"
-                "\n - forward = `{}`"
-                "\n - game = `{}`"
-                "\n - location = `{}`"
-                "\n - emoji = `{}`"
-                "\n - bigemoji = `{}`"
-                "\n - anonchannel = `{}`".format(
-                    locks.sticker,
-                    locks.audio,
-                    locks.voice,
-                    locks.document,
-                    locks.video,
-                    locks.videonote,
-                    locks.contact,
-                    locks.photo,
-                    locks.gif,
-                    locks.url,
-                    locks.bots,
-                    locks.forward,
-                    locks.game,
-                    locks.location,
-                    locks.emoji,
-                    locks.bigemoji,
-                    locks.anonchannel,
-                )
+    if locks:
+        res += (
+            "\n - sticker = `{}`"
+            "\n - audio = `{}`"
+            "\n - voice = `{}`"
+            "\n - document = `{}`"
+            "\n - video = `{}`"
+            "\n - videonote = `{}`"
+            "\n - contact = `{}`"
+            "\n - photo = `{}`"
+            "\n - gif = `{}`"
+            "\n - url = `{}`"
+            "\n - bots = `{}`"
+            "\n - forward = `{}`"
+            "\n - game = `{}`"
+            "\n - location = `{}`"
+            "\n - emoji = `{}`"
+            "\n - bigemoji = `{}`"
+            "\n - anonchannel = `{}`".format(
+                locks.sticker,
+                locks.audio,
+                locks.voice,
+                locks.document,
+                locks.video,
+                locks.videonote,
+                locks.contact,
+                locks.photo,
+                locks.gif,
+                locks.url,
+                locks.bots,
+                locks.forward,
+                locks.game,
+                locks.location,
+                locks.emoji,
+                locks.bigemoji,
+                locks.anonchannel,
             )
-        if restr:
-            res += (
-                "\n - messages = `{}`"
-                "\n - media = `{}`"
-                "\n - other = `{}`"
-                "\n - previews = `{}`"
-                "\n - all = `{}`".format(
-                    restr.messages,
-                    restr.media,
-                    restr.other,
-                    restr.preview,
-                    all([restr.messages, restr.media, restr.other, restr.preview]),
-                )
+        )
+    if restr:
+        res += (
+            "\n - messages = `{}`"
+            "\n - media = `{}`"
+            "\n - other = `{}`"
+            "\n - previews = `{}`"
+            "\n - all = `{}`".format(
+                restr.messages,
+                restr.media,
+                restr.other,
+                restr.preview,
+                all([restr.messages, restr.media, restr.other, restr.preview]),
             )
+        )
     return res
 
 

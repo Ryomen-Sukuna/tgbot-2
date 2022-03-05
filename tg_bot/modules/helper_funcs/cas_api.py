@@ -9,8 +9,7 @@ DL_DIR = "./csvExports"
 
 def get_user_data(user_id):
     with requests.request("GET", CAS_QUERY_URL + str(user_id)) as userdata_raw:
-        userdata = json.loads(userdata_raw.text)
-        return userdata
+        return json.loads(userdata_raw.text)
 
 
 def isbanned(userdata):
@@ -38,9 +37,8 @@ def timeadded(user_id):
     userdata = get_user_data(user_id)
     try:
         timeEp = userdata["result"]["time_added"]
-        timeHuman = datetime.datetime.utcfromtimestamp(timeEp).strftime(
+        return datetime.datetime.utcfromtimestamp(timeEp).strftime(
             "%H:%M:%S, %d-%m-%Y"
         )
-        return timeHuman
     except:
         return None

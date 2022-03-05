@@ -46,15 +46,13 @@ if is_module_loaded(FILENAME):
                 ].split("@")[0]
 
                 # disabled, admincmd, user admin
-                if sql.is_command_disabled(chat.id, command):
-                    if command in ADMIN_CMDS and is_user_admin(chat, user.id):
-                        pass
-                    else:
-                        return None
+                if sql.is_command_disabled(chat.id, command) and (
+                    command not in ADMIN_CMDS or not is_user_admin(chat, user.id)
+                ):
+                    return None
 
                 args = message.text.split()[1:]
-                filter_result = self.filters(update)
-                if filter_result:
+                if filter_result := self.filters(update):
                     return args, filter_result
                 return False
 
@@ -117,9 +115,11 @@ if is_module_loaded(FILENAME):
     def list_cmds(update: Update, context: CallbackContext):
         bot = context.bot
         if DISABLE_CMDS + DISABLE_OTHER:
-            result = ""
-            for cmd in set(DISABLE_CMDS + DISABLE_OTHER):
-                result += " - `{}`\n".format(escape_markdown(cmd))
+            result = "".join(
+                " - `{}`\n".format(escape_markdown(cmd))
+                for cmd in set(DISABLE_CMDS + DISABLE_OTHER)
+            )
+
             update.effective_message.reply_text(
                 "The following commands are toggleable:\n{}".format(result),
                 parse_mode=ParseMode.MARKDOWN,
@@ -133,9 +133,7 @@ if is_module_loaded(FILENAME):
         if not disabled:
             return "No commands are disabled!"
 
-        result = ""
-        for cmd in disabled:
-            result += " - `{}`\n".format(escape_markdown(cmd))
+        result = "".join(" - `{}`\n".format(escape_markdown(cmd)) for cmd in disabled)
         return "The following commands are currently restricted:\n{}".format(result)
 
     def commands(update: Update, context: CallbackContext):

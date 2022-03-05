@@ -44,9 +44,7 @@ class CustomFilters:
 
     class _HasEmoji(MessageFilter):
         def filter(self, message: Message):
-            text = ""
-            if message.text:
-                text = message.text
+            text = message.text or ""
             for emoji in UNICODE_EMOJI:
                 for letter in text:
                     if letter == emoji:
@@ -68,8 +66,6 @@ class CustomFilters:
 
     class _IsAnonChannel(MessageFilter):
         def filter(self, message: Message):
-            if message.from_user and message.from_user.id == 136817688:
-                return True
-            return False
+            return bool(message.from_user and message.from_user.id == 136817688)
 
     is_anon_channel = _IsAnonChannel()

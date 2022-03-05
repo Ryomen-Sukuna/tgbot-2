@@ -55,7 +55,7 @@ def getphh(index) -> str:
     assets = api.getAssets(recentRelease)
     releaseName = api.getReleaseName(recentRelease)
     message = "<b>Author:</b> <a href='{}'>{}</a>\n".format(authorUrl, author)
-    message += "<b>Release Name:</b> <code>" + releaseName + "</code>\n\n"
+    message += f"<b>Release Name:</b> <code>{releaseName}" + "</code>\n\n"
     message += "<b>Assets:</b>\n"
 
     for asset in assets:
@@ -68,7 +68,7 @@ def getphh(index) -> str:
         sizeB = ((api.getSize(asset)) / 1024) / 1024
         size = "{0:.2f}".format(sizeB)
         message += assetFile + "\n"
-        message += "    <code>Size: " + size + " MB</code>\n"
+        message += f"    <code>Size: {size}" + " MB</code>\n"
 
     return message
 
@@ -85,7 +85,7 @@ def getData(url, index) -> str:
     assets = api.getAssets(recentRelease)
     releaseName = api.getReleaseName(recentRelease)
     message = "<b>Author:</b> <a href='{}'>{}</a>\n".format(authorUrl, author)
-    message += "<b>Release Name:</b> " + releaseName + "\n\n"
+    message += f"<b>Release Name:</b> {releaseName}" + "\n\n"
 
     for asset in assets:
         message += "<b>Asset:</b> \n"
@@ -96,7 +96,7 @@ def getData(url, index) -> str:
         size = "{0:.2f}".format(sizeB)
         downloadCount = api.getDownloadCount(asset)
         message += assetFile + "\n"
-        message += "Size: " + size + " MB"
+        message += f"Size: {size} MB"
         message += "\nDownload Count: " + str(downloadCount) + "\n\n"
 
     return message
@@ -109,12 +109,9 @@ def getRepo(update, reponame):
     # From notes module (dda0d97d14e545d06c2f1d4d11ed694dbb1c0b63).
     # Seperate process to get a shortcut for given ID.
     if reponame.isdecimal():
-        check = sql.get_repo(chat.id, reponame)
-        # Choose reponame instead of repoid.
-        if check:
+        if check := sql.get_repo(chat.id, reponame):
             msg.reply_text(WARNING.format(reponame))
             repo = check
-        # Search reponame for given repoid.
         else:
             repos_list = sql.get_all_repos(chat.id)
             if repos_list[int(reponame) - 1]:
@@ -311,15 +308,12 @@ def delRepo(update: Update, context: CallbackContext):
 def listRepo(update: Update, unused_context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     repo_list = sql.get_all_repos(str(chat.id))
-    msg = "*Get available repo shortcuts*\n"
-    msg += "by adding the *ID* or *Name*\n"
+    msg = "*Get available repo shortcuts*\n" + "by adding the *ID* or *Name*\n"
     msg += "after typing `&` or `/fetch `\n\n"
     msg += "*ID*     *Name*\n"
     delmsg = msg
-    count = 1
-
     # From notes module.
-    for repo in repo_list:
+    for count, repo in enumerate(repo_list, start=1):
         # Reduce space by the length of repoID.
         if count < 10:
             repo_name = "`{}`\.      ".format(count) + "`{}`\n".format(repo.name)
@@ -333,8 +327,6 @@ def listRepo(update: Update, unused_context: CallbackContext):
             update.effective_message.reply_text(msg, parse_mode=ParseMode.MARKDOWN_V2)
             msg = ""
         msg += repo_name
-        count = count + 1
-
     # delmsg == msg means there's no note available.
     if delmsg == msg:
         update.effective_message.reply_text("No repo shortcuts in this chat!")
@@ -346,7 +338,7 @@ def listRepo(update: Update, unused_context: CallbackContext):
 def getVer(update: Update, unused_context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
     ver = api.vercheck()
-    msg.reply_text("GitHub API version: " + ver)
+    msg.reply_text(f"GitHub API version: {ver}")
 
 
 __help__ = """

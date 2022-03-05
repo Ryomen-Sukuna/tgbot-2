@@ -49,22 +49,23 @@ def rtt(update: Update, context: CallbackContext):
             "ping -c 1 149.154.167.220 | grep time=", shell=True
         ).decode()
     splitOut = out.split(" ")
-    stringtocut = ""
-    for line in splitOut:
-        if line.startswith("time=") or line.startswith("time<"):
-            stringtocut = line
-            break
+    stringtocut = next(
+        (
+            line
+            for line in splitOut
+            if line.startswith("time=") or line.startswith("time<")
+        ),
+        "",
+    )
+
     newstra = stringtocut.split("=")
     if len(newstra) == 1:
         under = True
         newstra = stringtocut.split("<")
     newstr = ""
-    if os.name == "nt":
-        newstr = newstra[1].split("ms")
-    else:
-        newstr = newstra[1].split(
+    newstr = newstra[1].split("ms") if os.name == "nt" else newstra[1].split(
             " "
-        )  # redundant split, but to try and not break windows ping
+        )
     ping_time = float(newstr[0])
     if os.name == "nt" and under:
         update.effective_message.reply_text(
@@ -90,8 +91,9 @@ def ping(update: Update, context: CallbackContext):
     if os.name == "nt":
         try:
             output = subprocess.check_output(
-                "ping -n 1 " + dns + " | findstr time*", shell=True
+                f"ping -n 1 {dns} | findstr time*", shell=True
             ).decode()
+
         except:
             message.reply_text("There was a problem parsing the IP/Hostname")
             return
@@ -100,36 +102,39 @@ def ping(update: Update, context: CallbackContext):
     else:
         try:
             out = subprocess.check_output(
-                "ping -c 1 " + dns + " | grep time=", shell=True
+                f"ping -c 1 {dns} | grep time=", shell=True
             ).decode()
+
         except:
             message.reply_text("There was a problem parsing the IP/Hostname")
             return
     splitOut = out.split(" ")
-    stringtocut = ""
-    for line in splitOut:
-        if line.startswith("time=") or line.startswith("time<"):
-            stringtocut = line
-            break
+    stringtocut = next(
+        (
+            line
+            for line in splitOut
+            if line.startswith("time=") or line.startswith("time<")
+        ),
+        "",
+    )
+
     newstra = stringtocut.split("=")
     if len(newstra) == 1:
         under = True
         newstra = stringtocut.split("<")
     newstr = ""
-    if os.name == "nt":
-        newstr = newstra[1].split("ms")
-    else:
-        newstr = newstra[1].split(
+    newstr = newstra[1].split("ms") if os.name == "nt" else newstra[1].split(
             " "
-        )  # redundant split, but to try and not break windows ping
+        )
     ping_time = float(newstr[0])
     if os.name == "nt" and under:
         update.effective_message.reply_text(
-            " Ping speed of " + dns + " is <{}ms".format(ping_time)
+            f" Ping speed of {dns}" + " is <{}ms".format(ping_time)
         )
+
     else:
         update.effective_message.reply_text(
-            " Ping speed of " + dns + ": {}ms".format(ping_time)
+            f" Ping speed of {dns}" + ": {}ms".format(ping_time)
         )
 
 

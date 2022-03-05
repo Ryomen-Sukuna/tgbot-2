@@ -40,27 +40,26 @@ def report_setting(update: Update, context: CallbackContext):
                 parse_mode=ParseMode.MARKDOWN,
             )
 
-    else:
-        if len(args) >= 1:
-            if args[0] in ("yes", "on"):
-                sql.set_chat_setting(chat.id, True)
-                msg.reply_text(
-                    "Turned on reporting! Admins who have turned on reports will be notified when /report "
-                    "or @admin are called."
-                )
-
-            elif args[0] in ("no", "off"):
-                sql.set_chat_setting(chat.id, False)
-                msg.reply_text(
-                    "Turned off reporting! No admins will be notified on /report or @admin."
-                )
-        else:
+    elif len(args) >= 1:
+        if args[0] in ("yes", "on"):
+            sql.set_chat_setting(chat.id, True)
             msg.reply_text(
-                "This chat's current setting is: `{}`".format(
-                    sql.chat_should_report(chat.id)
-                ),
-                parse_mode=ParseMode.MARKDOWN,
+                "Turned on reporting! Admins who have turned on reports will be notified when /report "
+                "or @admin are called."
             )
+
+        elif args[0] in ("no", "off"):
+            sql.set_chat_setting(chat.id, False)
+            msg.reply_text(
+                "Turned off reporting! No admins will be notified on /report or @admin."
+            )
+    else:
+        msg.reply_text(
+            "This chat's current setting is: `{}`".format(
+                sql.chat_should_report(chat.id)
+            ),
+            parse_mode=ParseMode.MARKDOWN,
+        )
 
 
 @loggable
@@ -69,8 +68,6 @@ def alert(update: Update, context: CallbackContext) -> str:
     message = update.effective_message  # type: Optional[Message]
     chat = update.effective_chat  # type: Optional[Chat]
     user = update.effective_user  # type: Optional[User]
-    ping_list = ""
-
     if chat and sql.chat_should_report(chat.id):
         chat_name = chat.title or chat.first or chat.username
         admin_list = chat.get_administrators()
@@ -94,6 +91,8 @@ def alert(update: Update, context: CallbackContext) -> str:
                 )
             )
 
+        ping_list = ""
+
         for admin in admin_list:
             if admin.user.is_bot:  # can't message bots
                 continue
@@ -109,9 +108,10 @@ def alert(update: Update, context: CallbackContext) -> str:
                     LOGGER.exception("Exception while reporting user")
 
         message.reply_text(
-            "Successfully alerted admins!" + ping_list,
+            f"Successfully alerted admins!{ping_list}",
             parse_mode=ParseMode.MARKDOWN,
         )
+
 
         return log
 
