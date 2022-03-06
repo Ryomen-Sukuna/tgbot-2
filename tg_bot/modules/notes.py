@@ -69,12 +69,9 @@ def get(bot, update, notename, show_none=True, no_format=False):
 
     # Seperate process to get a note for given ID.
     if notename.isdecimal():
-        check = sql.get_note(chat.id, notename)
-        # Choose notename instead of noteid.
-        if check:
+        if check := sql.get_note(chat.id, notename):
             msg.reply_text(WARNING.format(notename))
             note = check
-        # Search notename for given noteid.
         else:
             note_list = sql.get_all_chat_notes(chat.id)
             if note_list[int(notename) - 1]:
@@ -84,11 +81,7 @@ def get(bot, update, notename, show_none=True, no_format=False):
 
     if note:
         # If a replied msg, reply to that msg.
-        if msg.reply_to_message:
-            reply = msg.reply_to_message
-        else:
-            reply = msg
-
+        reply = msg.reply_to_message or msg
         text = note.value
         keyb = []
 
@@ -255,7 +248,7 @@ def clearall(update: Update, context: CallbackContext):
     msg = update.effective_message  # type: Optional[Message]
     query = update.callback_query
 
-    if not chat.type in ("group", "supergroup"):
+    if chat.type not in ("group", "supergroup"):
         msg.reply_text("This command is made to be used in groups!")
         return
 
@@ -268,9 +261,7 @@ def clearall(update: Update, context: CallbackContext):
                     text = "All notes have been deleted successfully."
                     query.edit_message_text(text)
                 except BadRequest as excp:
-                    if excp.message == "Chat_not_modified":
-                        pass
-
+                    pass
                 return (
                     "<b>{}:</b>"
                     "\n#ALL_NOTES_CLEARED"
@@ -288,9 +279,10 @@ def clearall(update: Update, context: CallbackContext):
             bot.answer_callback_query(query.id)
 
         except BadRequest as excp:
-            if excp.message in ("Message_not_modified", "Query_id_invalid"):
-                pass
-            else:
+            if excp.message not in (
+                "Message_not_modified",
+                "Query_id_invalid",
+            ):
                 LOGGER.exception("Exception in unpinall button. %s", str(query.data))
 
     keyboard = [
@@ -309,14 +301,11 @@ def list_notes(update: Update, context: CallbackContext):
     chat = update.effective_chat  # type: Optional[Chat]
     msg = update.effective_message  # type: Optional[Message]
     note_list = sql.get_all_chat_notes(chat.id)
-    reply = "*Get notes* available in here\n"
-    reply += "by adding the *ID* or *Name*\n"
+    reply = "*Get notes* available in here\n" + "by adding the *ID* or *Name*\n"
     reply += "after doing `#` or `/get `\n\n"
     reply += "*ID*     *Name*\n"
     del_reply = reply
-    count = 1
-
-    for note in note_list:
+    for count, note in enumerate(note_list, start=1):
         if count < 10:
             note_name = "`{}`\.      ".format(count) + "`{}`\n".format(note.name)
         if count >= 10 and count < 100:
@@ -327,8 +316,6 @@ def list_notes(update: Update, context: CallbackContext):
             msg.reply_text(reply, parse_mode=ParseMode.MARKDOWN_V2)
             reply = ""
         reply += note_name
-        count = count + 1
-
     if del_reply == reply:
         msg.reply_text("No notes in here!")
         return

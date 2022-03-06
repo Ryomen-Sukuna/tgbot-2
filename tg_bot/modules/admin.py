@@ -135,7 +135,7 @@ def demote(update: Update, context: CallbackContext) -> str:
         message.reply_text("This person CREATED the chat, how would I demote them?")
         return ""
 
-    if not user_member.status == "administrator":
+    if user_member.status != "administrator":
         message.reply_text("Can't demote what wasn't promoted!")
         return ""
 
@@ -210,7 +210,7 @@ def pin(update: Update, context: CallbackContext) -> str:
 
     is_silent = True
     if len(args) >= 1:
-        is_silent = not args[0].lower() in ("notify", "loud", "violent")
+        is_silent = args[0].lower() not in ("notify", "loud", "violent")
 
     if prev_message and is_group:
         try:
@@ -220,9 +220,7 @@ def pin(update: Update, context: CallbackContext) -> str:
             if not is_silent:
                 update.effective_message.reply_text("Pinned and notified to users!")
         except BadRequest as excp:
-            if excp.message == "Chat_not_modified":
-                pass
-            else:
+            if excp.message != "Chat_not_modified":
                 raise
         return (
             "<b>{}:</b>"
@@ -253,9 +251,7 @@ def unpin(update: Update, context: CallbackContext) -> str:
     try:
         bot.unpinChatMessage(chat.id, **args)
     except BadRequest as excp:
-        if excp.message == "Chat_not_modified":
-            pass
-        else:
+        if excp.message != "Chat_not_modified":
             raise
 
     return (
@@ -282,9 +278,7 @@ def unpinall(update: Update, context: CallbackContext) -> str:
         bot.unpinAllChatMessages(chat.id)
         update.effective_message.reply_text("Successfully unpinned all messages!")
     except BadRequest as excp:
-        if excp.message == "Chat_not_modified":
-            pass
-        else:
+        if excp.message != "Chat_not_modified":
             raise
 
     return (
@@ -327,10 +321,11 @@ def adminlist(update: Update, context: CallbackContext):
         user = admin.user
         status = admin.status
         name = "[{}](tg://user?id={})".format(
-            user.first_name + " " + (user.last_name or ""), user.id
+            f'{user.first_name} ' + ((user.last_name or "")), user.id
         )
+
         if user.username:
-            name = escape_markdown("@" + user.username)
+            name = escape_markdown(f"@{user.username}")
         if status == "creator":
             text += "\n *Creator:*"
             text += "\n`🤴🏻 `{} \n\n *Administrators:*".format(name)
@@ -340,10 +335,11 @@ def adminlist(update: Update, context: CallbackContext):
         chat = update.effective_chat
         count = chat.get_member_count()
         name = "[{}](tg://user?id={})".format(
-            user.first_name + " " + (user.last_name or ""), user.id
+            f'{user.first_name} ' + ((user.last_name or "")), user.id
         )
+
         if user.username:
-            name = escape_markdown("@" + user.username)
+            name = escape_markdown(f"@{user.username}")
         if status == "administrator":
             text += "\n`👮🏻 `{}".format(name)
             members = "\n\n*Members:*\n`🙎🏻‍♂️ ` {} users".format(count)

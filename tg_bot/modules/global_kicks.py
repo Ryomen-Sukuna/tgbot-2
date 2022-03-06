@@ -41,9 +41,7 @@ def gkick(update: Update, context: CallbackContext):
     try:
         user_chat = bot.get_chat(user_id)
     except BadRequest as excp:
-        if excp.message in GKICK_ERRORS:
-            pass
-        else:
+        if excp.message not in GKICK_ERRORS:
             message.reply_text(
                 "User cannot be Globally kicked because: {}".format(excp.message)
             )
@@ -103,9 +101,7 @@ def gkick(update: Update, context: CallbackContext):
             else:
                 bot.unban_chat_member(chat.chat_id, user_id)
         except BadRequest as excp:
-            if excp.message in GKICK_ERRORS:
-                pass
-            else:
+            if excp.message not in GKICK_ERRORS:
                 message.reply_text(
                     "User cannot be Globally kicked because: {}".format(excp.message)
                 )
@@ -118,14 +114,13 @@ def __user_info__(user_id):
     times = sql.get_times(user_id)
 
     if int(user_id) in SUDO_USERS or int(user_id) in SUPPORT_USERS:
-        text = "Globally kicked: <b>No</b> (Immortal)"
-    else:
-        text = "Globally kicked: {}"
-        if times != 0:
-            text = text.format("<b>Yes</b> (Times: {})".format(times))
-        else:
-            text = text.format("<b>No</b>")
-    return text
+        return "Globally kicked: <b>No</b> (Immortal)"
+    text = "Globally kicked: {}"
+    return (
+        text.format("<b>Yes</b> (Times: {})".format(times))
+        if times != 0
+        else text.format("<b>No</b>")
+    )
 
 
 def gkickset(update: Update, context: CallbackContext):
@@ -135,9 +130,7 @@ def gkickset(update: Update, context: CallbackContext):
     try:
         user_chat = bot.get_chat(user_id)
     except BadRequest as excp:
-        if excp.message in GKICK_ERRORS:
-            pass
-        else:
+        if excp.message not in GKICK_ERRORS:
             message.reply_text("GENERIC ERROR: {}".format(excp.message))
     except TelegramError:
         pass
@@ -165,9 +158,7 @@ def gkickreset(update: Update, context: CallbackContext):
     try:
         user_chat = bot.get_chat(user_id)
     except BadRequest as excp:
-        if excp.message in GKICK_ERRORS:
-            pass
-        else:
+        if excp.message not in GKICK_ERRORS:
             message.reply_text("GENERIC ERROR: {}".format(excp.message))
     except TelegramError:
         pass

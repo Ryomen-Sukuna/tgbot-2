@@ -39,10 +39,10 @@ def ban(update: Update, context: CallbackContext):
 
     banType = 0
     userIds = extract_multiple_users(message, args)
-    allTrue = True
-    for id in userIds:
-        if id is None or not isinstance(id, int) or id == "":
-            allTrue = False
+    allTrue = not any(
+        id is None or not isinstance(id, int) or id == "" for id in userIds
+    )
+
     if len(userIds) > 1 and allTrue:
         banType = 1
     if banType == 1:
@@ -55,11 +55,9 @@ def ban(update: Update, context: CallbackContext):
                 integerID = int(id)
                 member = chat.get_member(integerID)
                 if integerID == bot.id:
-                    message.reply_text(
-                        "I wont ban myself... " + str(integerID) + " is my ID."
-                    )
+                    message.reply_text(f"I wont ban myself... {integerID} is my ID.")
                     continue
-                if integerID in (777000, 1087968824):
+                if integerID in {777000, 1087968824}:
                     message.reply_text(
                         str(integerID)
                         + " is an account reserved for telegram, I cannot ban it"
@@ -77,7 +75,7 @@ def ban(update: Update, context: CallbackContext):
                         mention_html(member.user.id, member.user.first_name)
                     )
                     message.reply_text(reply, parse_mode=ParseMode.HTML)
-                    log += "ID: " + str(member.user.id) + "\n"
+                    log += f"ID: {str(member.user.id)}" + "\n"
                 except BadRequest as excp:
                     LOGGER.warning(update)
                     LOGGER.exception(
@@ -89,12 +87,10 @@ def ban(update: Update, context: CallbackContext):
                     )
                     message.reply_text("Well damn, I can't ban " + str(integerID))
             except ValueError:
-                message.reply_text(
-                    "Error parsing the ID: " + id + " is not a valid user ID"
-                )
+                message.reply_text(f"Error parsing the ID: {id} is not a valid user ID")
             except BadRequest as excp:
                 if excp.message == "User not found":
-                    message.reply_text("User " + str(integerID) + "has not been found")
+                    message.reply_text(f"User {integerID}has not been found")
                     continue
                 raise
         return log
@@ -196,11 +192,7 @@ def temp_ban(update: Update, context: CallbackContext):
     split_reason = reason.split(None, 1)
 
     time_val = split_reason[0].lower()
-    if len(split_reason) > 1:
-        reason = split_reason[1]
-    else:
-        reason = ""
-
+    reason = split_reason[1] if len(split_reason) > 1 else ""
     bantime = extract_time(message, time_val)
 
     if not bantime:
@@ -269,10 +261,10 @@ def kick(update: Update, context: CallbackContext):
 
     banType = 0
     userIds = extract_multiple_users(message, args)
-    allTrue = True
-    for id in userIds:
-        if id is None or not isinstance(id, int) or id == "":
-            allTrue = False
+    allTrue = not any(
+        id is None or not isinstance(id, int) or id == "" for id in userIds
+    )
+
     if len(userIds) > 1 and allTrue:
         banType = 1
 
@@ -291,11 +283,9 @@ def kick(update: Update, context: CallbackContext):
                     )
                     continue
                 if integerID == bot.id:
-                    message.reply_text(
-                        "I wont ban myself... " + str(integerID) + " is my ID."
-                    )
+                    message.reply_text(f"I wont ban myself... {integerID} is my ID.")
                     continue
-                if integerID in (777000, 1087968824):
+                if integerID in {777000, 1087968824}:
                     message.reply_text(
                         str(integerID)
                         + " is an account reserved for telegram, I cannot kick it"
@@ -308,16 +298,14 @@ def kick(update: Update, context: CallbackContext):
                         mention_html(member.user.id, member.user.first_name)
                     )
                     message.reply_text(reply, parse_mode=ParseMode.HTML)
-                    log += "ID: " + str(member.user.id) + "\n"
+                    log += f"ID: {str(member.user.id)}" + "\n"
                 else:
                     message.reply_text("Well damn, I can't kick that user.")
             except ValueError:
-                message.reply_text(
-                    "Error parsing the ID: " + id + " is not a valid user ID"
-                )
+                message.reply_text(f"Error parsing the ID: {id} is not a valid user ID")
             except BadRequest as excp:
                 if excp.message == "User not found":
-                    message.reply_text("User " + str(integerID) + "has not been found")
+                    message.reply_text(f"User {integerID}has not been found")
                     continue
                 raise
         return log

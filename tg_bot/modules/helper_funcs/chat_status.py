@@ -125,10 +125,7 @@ def user_admin(func):
         if user and is_user_admin(update.effective_chat, user.id):
             return func(update, context, *args, **kwargs)
 
-        if not user:
-            pass
-
-        else:
+        if user:
             update.effective_message.delete()
 
     return is_admin

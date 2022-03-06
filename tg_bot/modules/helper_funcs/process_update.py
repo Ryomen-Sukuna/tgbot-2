@@ -42,12 +42,11 @@ def process_update(dispatcher: Dispatcher, update: Update):
     now = datetime.datetime.utcnow()
     chat = update.effective_chat
 
-    if hasattr(chat, "id"):
-        count = CHATS_COUNT.get(chat.id, 0)
-        time = CHATS_TIME.get(chat.id, now)
-    else:
+    if not hasattr(chat, "id"):
         return
 
+    count = CHATS_COUNT.get(chat.id, 0)
+    time = CHATS_TIME.get(chat.id, now)
     if now > time + datetime.timedelta(0, 2):
         del CHATS_COUNT[chat.id]
         del CHATS_TIME[chat.id]

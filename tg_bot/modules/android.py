@@ -161,7 +161,7 @@ def getfw(update: Update, context: CallbackContext):
             return
 
         temp, csc = args[1], args[2]
-        model = "sm-" + temp if not temp.lower().startswith("sm-") else temp
+        model = f"sm-{temp}" if not temp.lower().startswith("sm-") else temp
         fota = get(
             f"http://fota-cloud-dn.ospserver.net/firmware/{csc.upper()}/{model.upper()}/version.xml"
         )
@@ -185,7 +185,7 @@ def getfw(update: Update, context: CallbackContext):
         os2 = page2.find("latest").get("o")
         data1 = page1.find("latest").text.strip()
         data2 = page2.find("latest").text.strip()
-        reply = f"<b>The latest firmwares for "
+        reply = "<b>The latest firmwares for "
         reply += f"{model.upper()} and {csc.upper()}:</b>\n\n"
 
         if data1:
@@ -211,15 +211,14 @@ def getfw(update: Update, context: CallbackContext):
             if os2:
                 reply += f"• Android: <code>{os2}</code>\n"
             reply += "\n"
+        elif os2 and data2:
+            reply += "<b>Latest test firmware:</b>\n"
+            reply += f"• Hash: <code>{data2}</code>\n"
+            reply += f"• Android: <code>{os2}</code>\n"
         else:
-            if os2 and data2:
-                reply += "<b>Latest test firmware:</b>\n"
-                reply += f"• Hash: <code>{data2}</code>\n"
-                reply += f"• Android: <code>{os2}</code>\n"
-            else:
-                reply += "<b>No test release found.</b>\n\n"
+            reply += "<b>No test release found.</b>\n\n"
 
-        reply += f"<b>Downloads</b>\n"
+        reply += "<b>Downloads</b>\\n"
         reply += f"• <a href='{url1}'>samfrew.com</a>\n"
         reply += f"• <a href='{url2}'>sammobile.com</a>\n"
         reply += f"• <a href='{url3}'>sfirmware.com</a>\n"

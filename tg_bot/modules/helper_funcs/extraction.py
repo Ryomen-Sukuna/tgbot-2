@@ -27,10 +27,8 @@ def extract_multiple_users(message: Message, args: List[str]):
     split_text = message.text.split(None, 1)
     if len(split_text) < 2:
         return list(id_from_reply(message))  # only option possible
-    retList = []
     entities = list(message.parse_entities([MessageEntity.TEXT_MENTION]))
-    for ent in entities:
-        retList.append(ent.user.id)
+    retList = [ent.user.id for ent in entities]
     for arg in args:
         if arg[0] == "@":
             user = arg
@@ -51,11 +49,7 @@ def extract_user_and_text(message: Message, args: List[str]) -> tuple("int, str"
     text = ""
 
     entities = list(message.parse_entities([MessageEntity.TEXT_MENTION]))
-    if len(entities) > 0:
-        ent = entities[0]
-    else:
-        ent = None
-
+    ent = entities[0] if entities else None
     # if entity offset matches (command end/text start) then all good
     if entities and ent and ent.offset == len(message.text) - len(text_to_parse):
         ent = entities[0]

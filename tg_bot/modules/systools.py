@@ -14,7 +14,7 @@ from tg_bot.modules.helper_funcs.filters import CustomFilters
 def status(update: Update, context: CallbackContext):
     user_id = update.effective_user.id
     reply = "*System Status:* `operational`\n\n"
-    reply += "*Python version:* `" + python_version() + "`\n"
+    reply += f"*Python version:* `{python_version()}" + "`\n"
     reply += (
         "*python-telegram-bot:* `"
         + str(
@@ -24,8 +24,8 @@ def status(update: Update, context: CallbackContext):
         ).split()[1]
         + "`\n"
     )
-    reply += "*CAS API version:* `" + str(cas.vercheck()) + "`\n"
-    reply += "*GitHub API version:* `" + str(git.vercheck()) + "`\n"
+    reply += f"*CAS API version:* `{str(cas.vercheck())}" + "`\n"
+    reply += f"*GitHub API version:* `{str(git.vercheck())}" + "`\n"
     update.effective_message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
 
 

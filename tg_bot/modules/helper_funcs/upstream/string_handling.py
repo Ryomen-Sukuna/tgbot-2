@@ -89,9 +89,8 @@ def _selective_escape(to_parse: str, version: int = 1) -> str:
         ent_end = match.end()
 
         if match.group("esc"):
-            to_parse = (
-                to_parse[: ent_start + offset] + "\\" + to_parse[ent_start + offset :]
-            )
+            to_parse = f'{to_parse[: ent_start + offset]}\\{to_parse[ent_start + offset :]}'
+
             offset += 1
 
         elif not match.group("link"):

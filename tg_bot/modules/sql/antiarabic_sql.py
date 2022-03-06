@@ -26,8 +26,9 @@ CHAT_LOCK = threading.RLock()
 
 def chat_antiarabic(chat_id: Union[str, int]) -> bool:
     try:
-        chat_setting = SESSION.query(AntiArabicChatSettings).get(str(chat_id))
-        if chat_setting:
+        if chat_setting := SESSION.query(AntiArabicChatSettings).get(
+            str(chat_id)
+        ):
             return chat_setting.antiarabic
         return False
     except:

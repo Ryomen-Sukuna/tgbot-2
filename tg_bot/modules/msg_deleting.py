@@ -48,7 +48,7 @@ def purge(update: Update, context: CallbackContext) -> str:
                 try:
                     bot.deleteMessage(chat.id, m_id)
                 except BadRequest as err:
-                    if not err.message in (
+                    if err.message not in (
                         "Message to delete not found",
                         "Message can't be deleted",
                     ):
@@ -59,12 +59,7 @@ def purge(update: Update, context: CallbackContext) -> str:
             try:
                 msg.delete()
             except BadRequest as err:
-                if err.message in (
-                    "Message to delete not found",
-                    "Message can't be deleted",
-                ):
-                    pass
-
+                pass
             fin_text = "Purge complete\."
             if "purge_err" in locals():
                 fin_text += (
@@ -78,12 +73,7 @@ def purge(update: Update, context: CallbackContext) -> str:
             try:
                 del_msg.delete()
             except BadRequest as err:
-                if err.message in (
-                    "Message to delete not found",
-                    "Message can't be deleted",
-                ):
-                    pass
-
+                pass
             return (
                 "<b>{}:</b>"
                 "\n#PURGE"
@@ -113,9 +103,7 @@ def del_message(update: Update, context: CallbackContext) -> str:
     if not check_perms(update, 0):
         return ""
     msg = update.effective_message  # type: Optional[Message]
-    reply_msg = msg.reply_to_message
-
-    if reply_msg:
+    if reply_msg := msg.reply_to_message:
         try:
             reply_msg.delete()
         except BadRequest as err:
@@ -125,12 +113,7 @@ def del_message(update: Update, context: CallbackContext) -> str:
         try:
             msg.delete()
         except BadRequest as err:
-            if err.message in (
-                "Message to delete not found",
-                "Message can't be deleted",
-            ):
-                pass
-
+            pass
         return ""
 
     msg.reply_text("Reply to a message to delete.")

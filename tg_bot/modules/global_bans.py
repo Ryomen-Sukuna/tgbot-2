@@ -115,8 +115,8 @@ def gban(update: Update, context: CallbackContext):
             user_id, user_chat.username or user_chat.first_name, reason
         )
         user_id, new_reason = extract_user_and_text(message, args)
+        banner = update.effective_user  # type: Optional[User]
         if old_reason:
-            banner = update.effective_user  # type: Optional[User]
             send_to_list(
                 bot,
                 SUDO_USERS + SUPPORT_USERS,
@@ -148,7 +148,6 @@ def gban(update: Update, context: CallbackContext):
                 parse_mode=ParseMode.HTML,
             )
         else:
-            banner = update.effective_user  # type: Optional[User]
             send_to_list(
                 bot,
                 SUDO_USERS + SUPPORT_USERS,
@@ -212,9 +211,7 @@ def gban(update: Update, context: CallbackContext):
         try:
             bot.ban_chat_member(chat_id, user_id)
         except BadRequest as excp:
-            if excp.message in GBAN_ERRORS:
-                pass
-            else:
+            if excp.message not in GBAN_ERRORS:
                 message.reply_text("Could not gban due to: {}".format(excp.message))
                 send_to_list(
                     bot,
@@ -289,9 +286,7 @@ def ungban(update: Update, context: CallbackContext):
                 bot.unban_chat_member(chat_id, user_id)
 
         except BadRequest as excp:
-            if excp.message in UNGBAN_ERRORS:
-                pass
-            else:
+            if excp.message not in UNGBAN_ERRORS:
                 message.reply_text("Could not un-gban due to: {}".format(excp.message))
                 bot.send_message(
                     OWNER_ID, "Could not un-gban due to: {}".format(excp.message)

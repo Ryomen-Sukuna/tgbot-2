@@ -54,16 +54,10 @@ def parse_note_type(msg: Message):
 
     if msg.reply_to_message:
         msg = msg.reply_to_message
-        if msg.text or msg.caption:
-            note_text = msg.text or msg.caption
-        else:
-            note_text = ""
+        note_text = msg.text or msg.caption or ""
         isReply = True
     else:
-        if len(args) >= 3:
-            note_text = str(args[2])
-        else:
-            note_text = ""
+        note_text = str(args[2]) if len(args) >= 3 else ""
         isReply = False
 
     entities = msg.parse_entities() or msg.parse_caption_entities()
@@ -109,9 +103,5 @@ def parse_note_type(msg: Message):
         if len(text.strip()) == 0:
             text = escape_markdown(note_name, 2)
 
-        if buttons:
-            data_type = Types.BUTTON_TEXT
-        else:
-            data_type = Types.TEXT
-
+        data_type = Types.BUTTON_TEXT if buttons else Types.TEXT
     return note_name, text, data_type, content, buttons

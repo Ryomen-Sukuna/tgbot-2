@@ -45,8 +45,7 @@ def gkick_setvalue(user_id, name, value):
 
 
 def gkick_reset(user_id):
-    user = SESSION.query(GloballyKickedUsers).get(user_id)
-    if user:
+    if user := SESSION.query(GloballyKickedUsers).get(user_id):
         user.times = 0
         SESSION.delete(user)
     SESSION.commit()
